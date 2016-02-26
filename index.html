@@ -1,0 +1,123 @@
+<html>
+	<head>
+		<script src="js/simulator.js"></script>
+		<script src="js/gui.js"></script>
+		
+		<style>
+		.noselect {
+			-webkit-touch-callout: none;
+			-webkit-user-select: none;
+			-khtml-user-select: none;
+			-moz-user-select: none;
+			-ms-user-select: none;
+			user-select: none;
+		}
+		
+		input.nospin[type=number]::-webkit-inner-spin-button, input.nospin[type=number]::-webkit-outer-spin-button { 
+			-webkit-appearance: none;
+			-moz-appearance: none;
+			appearance: none;
+			margin: 0; 
+		}
+		</style>
+	</head>
+	<body id="bid">
+		<svg style="width:0px;height:0px">
+			<defs>
+				<marker id="Rarrow" markerWidth="10" markerHeight="10" refx="0" refy="2" orient="auto" markerUnits="strokeWidth">
+				<path d="M0,0 L0,4 L6,2 z" fill="rgb(128,32,32)" />
+				</marker>
+				<marker id="Parrow" markerWidth="10" markerHeight="10" refx="0" refy="2" orient="auto" markerUnits="strokeWidth">
+				<path d="M0,0 L0,4 L6,2 z" fill="rgb(32,32,128)" />
+				</marker>
+
+				<marker id="rRarrow" markerWidth="10" markerHeight="10" refx="5" refy="2" orient="auto" markerUnits="strokeWidth">
+				<path d="M6,0 L6,4 L0,2 z" fill="rgb(128,32,32)" />
+				</marker>
+				<marker id="rParrow" markerWidth="10" markerHeight="10" refx="5" refy="2" orient="auto" markerUnits="strokeWidth">
+				<path d="M6,0 L6,4 L0,2 z" fill="rgb(32,32,128)" />
+				</marker>
+			</defs>
+		</svg>
+		<div id="host" style="position:absolute;left:15px;top:80px;width:71%;bottom:10px;background-color:rgb(230,240,230);box-shadow: 3px 3px 2px 2px;overflow: scroll">
+			<svg id="canvas" style="width:4000px;height:4000px">
+			</svg>
+		</div>
+				
+		<div class="noselect" id="editor" style="position:absolute;left:73%;top:10px;width:25%;height:89%;background-color:rgb(240,230,220);box-shadow: 3px 3px 2px 2px;padding:5px">
+			<h2>Compound: <input type="text" id="cmpName" onchange="updateCName()"> <input type="button" value="Delete" onclick="deleteCompound()"></h2>
+			<div style="position:relative;left:20px">Energy: 
+				<input style="position:absolute;left:100px;width:190px" type="range" min=-10 max=10 step=0.1 id="compEnergy" oninput="document.getElementById('compEnergy2').value = this.value; updateEnergy()">
+				<input style="position:absolute;left:300px" type="number" min=-10 max=10 step=0.1 id="compEnergy2" onchange="document.getElementById('compEnergy').value = this.value; updateEnergy()">
+				<br><br>
+			Conc.: 
+				<input style="position:absolute;left:100px;width:190px" type="range" min=-10 max=4.605 step=0.01 id="compConc" oninput="document.getElementById('compConc2').value = Math.exp(this.value); updateConc()">
+				<input style="position:absolute;left:300px" type="number" min=0 max=100 step=0.001 id="compConc2" onchange="document.getElementById('compConc').value = Math.log(this.value); updateConc()">
+				<input type="checkbox" value="false" id="fixBuffer" onchange="updateBuffer()"><span style="position:relative;top:-15px;left:-25px;font-size:70%">Buffer</span><br><br>
+			Flux: 
+				<input style="position:absolute;left:100px;width:190px" type="range" min=-1 max=1 step=0.01 id="compFlux" oninput="document.getElementById('compFlux2').value = this.value; updateFlux()">
+				<input style="position:absolute;left:300px" type="number" min=-1 max=1 step=0.01 id="compFlux2" onchange="document.getElementById('compFlux').value = this.value; updateFlux()">
+			</div><br>
+			
+			<h2>Reaction: <input type="text" id="rxnName" onchange="updateRName()"> <input type="button" value="Delete" onclick="deleteReaction()"></h2>
+			<div style="position:relative;left:20px">
+			Equation: <span id="rxnEqn"></span><br><br>
+			Rate: 
+				<input style="position:absolute;left:100px;width:190px" type="range" min=-14 max=2 step=0.01 id="rxnRate" oninput="document.getElementById('rxnRate2').value = Math.exp(this.value); updateRate()">
+				<input style="position:absolute;left:300px" type="number" min=0 max=5 step=0.01 id="rxnRate2" onchange="document.getElementById('rxnRate').value = Math.log(this.value); updateRate()">
+				<br><br>
+			kEq: <input style="position:absolute;left:100px;width:190px" type="range" min=-20 max=20 step=0.01 id="rxnKeq" oninput="document.getElementById('rxnKeq2').value = Math.exp(this.value); updateKeq()">
+				 <input style="position:absolute;left:300px" type="number" min=0 max=1e8 step=1e-8 id="rxnKeq2" onchange="document.getElementById('rxnKeq').value = Math.log(this.value); updateKeq()">
+				 <input type="checkbox" value="false" id="fixKeq" onchange="updateKeq()"><span style="position:relative;top:-15px;left:-18px;font-size:70%">Fix</span><br><br>
+			Qf: <span id="fflux"></span><br>
+			Qb: <span id="bflux"></span><br>
+			Qnet: <span id="nflux"></span><br><br>
+			Reactants:<br>
+				<div id="reactantList">
+				</div><br>
+			Products:<br>
+				<div id="productList">
+				</div><br>
+			Catalysts:<br>
+				<div id="catalystList">
+				</div>
+			</div>
+		</div>
+
+		<div class="noselect" id="menu" style="position:absolute;left:15px;top:10px;width:70.5%;height:50px;background-color:rgb(240,230,220);box-shadow: 3px 3px 2px 2px;padding:5px">
+			<input id="runButton" style="height:45px" type="button" value="Run" onclick="toggleRun()">
+			<input type="button" style="height:45px" value="Fast" onclick="fast = !fast; if (fast) this.value = 'Slow'; else this.value = 'Fast';">
+			<input type="button" style="height:45px" value="Undo" onclick="Undo()">
+			<input type="button" style="height:45px" value="Zoom -" onclick="ZoomOut()">
+			<input type="button" style="height:45px" value="Zoom +" onclick="ZoomIn()">
+			<input type="button" style="height:45px" value="Clear" onclick="clearNetwork()">
+			<input type="button" style="height:45px;position:relative;top:-8px" value="Calc&#10;Energies" onclick="calcEnergies()">
+			<button id="fluxbutton" style="height:45px;position:relative;top:-8px" onclick="toggleFlux()">Show<br>Flux</button>
+			<button id="eqbutton" style="height:45px;position:relative;top:-8px" onclick="toggleEqFlux()">Show<br>Eq. Flux</button>
+			<input type="button" id="init" style="height:45px;position:relative;top:-8px" value="Store&#10;Initial" onclick="setInitial()">
+			<input type="button" style="height:45px;position:relative;top:-8px" value="Reset&#10;Conc." onclick="resetConc()">
+<!--
+			<input type="button" id="opencontrol" style="height:45px" value="Controllers" onclick="createControllerWindow()">
+			<input type="button" id="opencontrol" style="height:45px" value="Graphs" onclick="createGraphWindow()">
+-->
+			
+			<span style="position:absolute;right:10px">DT: <span id="dtdisplay"></span><br>t: <span id="tdisplay"></span></span>
+		</div>
+
+		<div class="noselect" id="menu" style="position:absolute;left:73%;top:92%;width:25%;height:5%;background-color:rgb(240,230,220);box-shadow: 3px 3px 2px 2px;padding:5px">
+<!--
+			<a id="savelink" href="#" onclick="this.href = 'data:text/json;charset=utf-8,' + escape(JSON.stringify(curNet))" download target="_blank"
+-->
+			<input id="runButton2" type="button" value="Run" onclick="toggleRun()">
+			<input type="button" value="Save" onclick="saveNet()">
+			<input type="button" value="Load" onclick="document.getElementById('fsel').click()">
+			<input type="button" value="Save Data" onclick="saveData()">
+			<input id="fsel" style="visibility:hidden" type="file" onchange="loadNet(this.files[0])"><br>
+			Record: <input type="checkbox" value="false" id="recordRun">
+			Interval: <input class="nospin" type="number" min="1e-2" max="1e4" value="1e-1" id="tsInterval">
+			End: <input class="nospin" type="number" min="1e-2" max="1e6" value="10" id="tsEnd">
+			<span style="position:absolute;right:10px" id="dataStatus">(No data recorded)</span>
+		</div>
+
+	</body>
+</html>

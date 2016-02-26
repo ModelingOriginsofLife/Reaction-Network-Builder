@@ -1,0 +1,18 @@
+Todo:
+
+	Readme
+	For calc energy, if residual error is high, display in red
+	Show high-error compounds/reactions?
+
+X	Fix scroll bar while dragging makes it impossible to drop
+X	Fix the interface reverting name changes while running
+X	***Reload is dangerous*** - Make backup of current state, add button to clear all
+X	'Delete' button
+X	Grey out numeric entry boxes while running?
+X	Change behavior when deleting
+X	Ctrl-Z for Undo
+?	Fix deleting compound causes JS errors
+X	Show selection
+X	Refresh interface during undo/delete
+X 	'Buffer' button to enable trash compound
+X	Visualize flux with arrow thickness?
